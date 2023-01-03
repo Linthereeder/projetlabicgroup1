@@ -157,30 +157,17 @@ TimeDate:entity work.time_date(Behavioral)
         o_day =>  o_day,
         lcd_dcf=> lcd_dcf ,
         o_dow => o_dow ,
-        o_valid=> o_valid 
-        
+        o_valid=> o_valid ,
+        o_second_d=> o_second_d ,
+        o_min_d=> o_min_d ,
+        o_day_d=> o_day_d ,
+        o_hour_d=> o_hour_d ,
+        o_month_d=> o_month_d ,
+        o_year_d=> o_year_d 
        
         );
 --convert bin output to bcd
-convert_sec: entity work.bcd_converter_opt(Behavioral)
-    port map ( binary_in => std_logic_vector(o_second),
-                decimal_out=> o_second_d);
-                
-convert_min: entity work.bcd_converter_opt(Behavioral)
-    port map ( binary_in => std_logic_vector(o_min),
-                decimal_out=> o_min_d);
-convert_day: entity work.bcd_converter_opt(Behavioral)
-    port map ( binary_in => std_logic_vector(o_day),
-                decimal_out=> o_day_d);                
-convert_hour: entity work.bcd_converter_opt(Behavioral)
-    port map ( binary_in => std_logic_vector(o_hour),
-                decimal_out=> o_hour_d);
-convert_month: entity work.bcd_converter_opt(Behavioral)
-    port map ( binary_in => std_logic_vector(o_month),
-                decimal_out=> o_month_d);
-convert_year: entity work.bcd_converter_opt(Behavioral)
-    port map ( binary_in => std_logic_vector(o_year),
-                decimal_out=> o_year_d);                
+               
                
                                           
 --Haoyuan Liu, part TIME and DATE ,end 

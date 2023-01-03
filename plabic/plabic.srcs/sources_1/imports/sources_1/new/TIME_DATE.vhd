@@ -54,9 +54,14 @@ entity time_date is
         o_day : out STD_LOGIC_VECTOR(6 downto 0); 
         lcd_dcf: out std_logic;
         o_dow : out STD_LOGIC_VECTOR(2 downto 0);
-        o_valid: out std_logic--used for bcd converter
+        o_valid: out std_logic;--used for bcd converter
         
-       
+        o_second_d: out STD_LOGIC_VECTOR(7 downto 0);--output in bcd
+        o_min_d: out STD_LOGIC_VECTOR(7 downto 0);
+        o_day_d: out STD_LOGIC_VECTOR(7 downto 0);
+        o_hour_d: out STD_LOGIC_VECTOR(7 downto 0);
+        o_month_d: out STD_LOGIC_VECTOR(7 downto 0);
+        o_year_d: out STD_LOGIC_VECTOR(7 downto 0)
         );
 end entity;
 architecture Behavioral of time_date is
@@ -78,6 +83,8 @@ signal        lcd_dcf_reg: std_logic;
 signal        dcf_counter: unsigned( 2 downto 0); 
 signal        MSEC_EN,min_en,sec_en,hour_en,day_en,month_en,year_en,dow_en,out_valid: std_logic;
 signal        MSEC_EN_s,min_en_s,sec_en_s,hour_en_s,day_en_s,month_en_s,year_en_s,dow_en_s,out_valid_s: std_logic;
+signal       internal_second_d_s, internal_min_d_s, internal_day_d_s, internal_hour_d_s, internal_month_d_s, internal_year_d_s: STD_LOGIC_VECTOR(7 downto 0);
+signal       internal_second_d, internal_min_d, internal_day_d, internal_hour_d, internal_month_d, internal_year_d: STD_LOGIC_VECTOR(7 downto 0);
 begin
 rst<= reset_extern or de_set;
 
@@ -96,8 +103,38 @@ judge_logic:entity work.CALENDAR(Behavioral)--how many days in a month. leap yea
     o_month<=STD_LOGIC_VECTOR(internal_month_s);
     o_day<=STD_LOGIC_VECTOR(internal_day_s);
     o_dow<=STD_LOGIC_VECTOR(internal_dow_s); 
+    
+    o_hour_d<= internal_hour_d_s;
+    o_min_d<= internal_min_d_s;
+    o_second_d<= internal_second_d_s;
+    o_year_d<= internal_year_d_s;
+    o_month_d<= internal_month_d_s;
+    o_day_d<= internal_day_d_s;
+ 
 
+convert_sec: entity work.bcd_converter_opt(Behavioral) --bcd converter logic
+    port map ( binary_in => std_logic_vector(internal_second),
+                decimal_out=> internal_second_d);
+                
+convert_min: entity work.bcd_converter_opt(Behavioral)
+    port map ( binary_in => std_logic_vector(internal_min),
+                decimal_out=> internal_min_d);
+convert_day: entity work.bcd_converter_opt(Behavioral)
+    port map ( binary_in => std_logic_vector(internal_day),
+                decimal_out=> internal_day_d);                
+convert_hour: entity work.bcd_converter_opt(Behavioral)
+    port map ( binary_in => std_logic_vector(internal_hour),
+                decimal_out=> internal_hour_d);
+convert_month: entity work.bcd_converter_opt(Behavioral)
+    port map ( binary_in => std_logic_vector(internal_month),
+                decimal_out=> internal_month_d);
+convert_year: entity work.bcd_converter_opt(Behavioral)
+    port map ( binary_in => std_logic_vector(internal_year),
+                decimal_out=> internal_year_d);  
 o_valid<= out_valid_s;    
+
+
+
 to_lcd: process(clk)
 begin
      if rising_edge(clk) then --reg the output, avoid invalid value
@@ -110,9 +147,16 @@ begin
             internal_month_s<=internal_month;
             internal_day_s<=internal_day;
             internal_dow_s<=internal_dow;
+ 
+            internal_second_d_s<=internal_second_d;
+            internal_min_d_s<= internal_min_d;
+            internal_day_d_s<=internal_day_d;
+            internal_hour_d_s<=internal_hour_d;
+            internal_month_d_s<=internal_month_d;
+            internal_year_d_s<=internal_year_d;
          else 
  
-            internal_hour_s<=internal_hour_s;
+            internal_hour_s<=internal_hour_s;--keep the old value when not valid
             internal_min_s<=internal_min_s;
             internal_second_s<=internal_second_s;
             internal_year_s<=internal_year_s;
@@ -120,6 +164,13 @@ begin
             internal_month_s<=internal_month_s;
             internal_day_s<=internal_day_s;
             internal_dow_s<=internal_dow_s;
+            
+            internal_second_d_s<=internal_second_d_s;
+            internal_min_d_s<= internal_min_d_s;
+            internal_day_d_s<=internal_day_d_s;
+            internal_hour_d_s<=internal_hour_d_s;
+            internal_month_d_s<=internal_month_d_s;
+            internal_year_d_s<=internal_year_d_s;
          end if;
        end if;
  end process;
